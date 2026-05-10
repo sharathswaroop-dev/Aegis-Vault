@@ -19,6 +19,7 @@ import {
   ScrollText,
   Settings,
   Lock,
+  Network,
 } from "lucide-react";
 
 interface NavItem {
@@ -47,6 +48,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "FAMILY",
     items: [
+      { name: "Family Tree", href: "/family-tree", icon: <Network size={18} /> },
       { name: "Nominees", href: "/nominees", icon: <Users size={18} /> },
       { name: "Family Vault", href: "/vault", icon: <Shield size={18} /> },
       { name: "Shared Access", href: "/shared", icon: <Share2 size={18} /> },
