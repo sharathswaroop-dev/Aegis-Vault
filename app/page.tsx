@@ -1,65 +1,151 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { motion } from "framer-motion";
+import { WalletCards, Users, Bell, SearchCheck } from "lucide-react";
+import { FamilyReadiness } from "@/components/dashboard/FamilyReadiness";
+import { EmergencyBanner } from "@/components/dashboard/EmergencyBanner";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { AIInsightCard } from "@/components/dashboard/AIInsightCard";
+import { AssetCard } from "@/components/dashboard/AssetCard";
+import { NomineeCard } from "@/components/dashboard/NomineeCard";
+import { ReminderCard } from "@/components/dashboard/ReminderCard";
+
+export default function Dashboard() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="space-y-8 pb-10">
+      
+      {/* 1. Greeting Header */}
+      <div className="flex flex-col gap-1">
+        <h2 className="text-2xl font-semibold tracking-tight text-[#1D1D1D]">Family Dashboard</h2>
+        <p className="text-[#6B6B6B] text-sm">An overview of your family's financial continuity and preparedness.</p>
+      </div>
+
+      {/* 4. Emergency Banner */}
+      <EmergencyBanner />
+
+      {/* 2. Family Readiness Score */}
+      <FamilyReadiness />
+
+      {/* 3. Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Family Assets"
+          value="$2.4M"
+          icon={<WalletCards size={20} />}
+          trend={{ value: "+2.1%", isPositive: true, text: "vs last month" }}
+          delay={0.1}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <StatCard
+          title="Active Nominees"
+          value="4"
+          icon={<Users size={20} />}
+          trend={{ value: "1 missing", isPositive: false, text: "for HDFC Account" }}
+          delay={0.2}
+        />
+        <StatCard
+          title="Actions Needed"
+          value="3"
+          icon={<Bell size={20} />}
+          trend={{ value: "Priority", isPositive: false, text: "document renewals" }}
+          delay={0.3}
+        />
+        <StatCard
+          title="AI Protection Scans"
+          value="24"
+          icon={<SearchCheck size={20} />}
+          trend={{ value: "All clear", isPositive: true, text: "in last 30 days" }}
+          delay={0.4}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column (Span 2): Assets & Nominees */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* 5. Assets Overview */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="glass-panel rounded-2xl p-6"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#1D1D1D]">Family Assets</h3>
+              <button className="text-sm font-medium text-[#2E5E4E] hover:underline">View All</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <AssetCard name="HDFC Primary Checking" type="bank" value="$42,500" nomineeStatus="missing" documentStatus="complete" />
+              <AssetCard name="LIC Term Life" type="insurance" value="$500,000" nomineeStatus="complete" documentStatus="missing" />
+              <AssetCard name="Downtown Apartment" type="property" value="$1.2M" nomineeStatus="pending" documentStatus="pending" />
+              <AssetCard name="Vanguard Index Fund" type="investment" value="$650,000" nomineeStatus="complete" documentStatus="complete" />
+            </div>
+          </motion.div>
+
+          {/* 6. Nominee Overview */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="glass-panel rounded-2xl p-6"
           >
-            Documentation
-          </a>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#1D1D1D]">Active Nominees</h3>
+              <button className="text-sm font-medium text-[#2E5E4E] hover:underline">Manage</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <NomineeCard name="Priya Swaroop" relation="Spouse" accessLevel="Full Access" hasEmergencyAccess={true} />
+              <NomineeCard name="Rahul Swaroop" relation="Son" accessLevel="View Only" hasEmergencyAccess={false} />
+            </div>
+          </motion.div>
+
         </div>
-      </main>
+
+        {/* Right Column: AI Insights & Reminders */}
+        <div className="space-y-6">
+          
+          {/* 7. AI Insights */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="glass-panel rounded-2xl p-6"
+          >
+            <h3 className="text-lg font-semibold text-[#1D1D1D] mb-4">Aegis AI Insights</h3>
+            <div className="space-y-3">
+              <AIInsightCard 
+                title="Asset allocation is stable" 
+                description="Your family's liquidity ratio has improved, providing a better safety net for emergency reserves."
+                type="positive"
+              />
+              <AIInsightCard 
+                title="Map a secondary nominee" 
+                description="You have 2 accounts where only one primary nominee is listed. Adding a secondary nominee ensures smoother inheritance."
+                type="warning"
+              />
+            </div>
+          </motion.div>
+
+          {/* 8. Upcoming Reminders */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+            className="glass-panel rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#1D1D1D]">Upcoming Actions</h3>
+            </div>
+            <div className="space-y-3">
+              <ReminderCard title="Renew Term Life Insurance" date="In 14 days" urgency="high" />
+              <ReminderCard title="Add nominee to HDFC Account" date="Action required" urgency="medium" />
+              <ReminderCard title="Update Property Tax Records" date="In 2 months" urgency="low" />
+            </div>
+          </motion.div>
+
+        </div>
+      </div>
+
     </div>
   );
 }
