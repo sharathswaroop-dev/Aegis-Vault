@@ -1,27 +1,22 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MainLayout } from "@/components/layout/MainLayout";
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "Aegis Vault — AI-Powered Financial Intelligence",
+  title: "FoodFlow AI - Inventory Intelligence Platform",
   description:
-    "The world's most intelligent financial vault. Protect, organize, and grow your wealth with AI-powered document intelligence, expense tracking, and family continuity planning.",
-  keywords: ["AI fintech", "financial planning", "wealth management", "document intelligence", "family vault"],
+    "AI-powered inventory forecasting and supply chain intelligence for warehouses, retailers, suppliers, and distributors.",
+  keywords: [
+    "inventory forecasting",
+    "supply chain intelligence",
+    "food inventory",
+    "spoilage reduction",
+    "AI operations",
+  ],
   openGraph: {
-    title: "Aegis Vault — AI-Powered Financial Intelligence",
-    description: "The world's most intelligent financial vault.",
+    title: "FoodFlow AI",
+    description:
+      "Inventory forecasting, spoilage reduction, and pricing intelligence for food operations.",
     type: "website",
   },
 };
@@ -32,14 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col overflow-x-hidden bg-[#F5F3EE]">
-        <MainLayout>
-          {children}
-        </MainLayout>
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full flex flex-col overflow-x-hidden bg-[#F7F8F4]">
+        <MainLayout>{children}</MainLayout>
       </body>
     </html>
   );

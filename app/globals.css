@@ -5,8 +5,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Inter, Geist, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
@@ -20,35 +20,32 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
 
-  /* Custom Aegis Palette */
-  --aegis-bg: #F5F3EE;
-  --aegis-card: #FCFBF8;
-  --aegis-border: #E7E5E0;
-  --aegis-green: #2E5E4E;
-  --aegis-gold: #C6A969;
-  --aegis-text: #1D1D1D;
-  --aegis-muted: #6B6B6B;
-  --aegis-danger: #B85C5C;
-  --aegis-success: #4B7F52;
-  --aegis-warning: #C68A2D;
+  --foodflow-bg: #F7F8F4;
+  --foodflow-card: #FFFFFF;
+  --foodflow-border: #E5E7EB;
+  --foodflow-green: #0F8F5F;
+  --foodflow-green-hover: #0C7A51;
+  --foodflow-green-soft: #E8F5EE;
+  --foodflow-text: #111827;
+  --foodflow-muted: #6B7280;
 }
 
 :root {
-  --background: #F5F3EE;
-  --foreground: #1D1D1D;
-  --card: #FCFBF8;
-  --card-foreground: #1D1D1D;
-  --border: #E7E5E0;
-  --primary: #2E5E4E;
-  --primary-foreground: #FCFBF8;
-  --muted: #E7E5E0;
-  --muted-foreground: #6B6B6B;
-  --accent: #C6A969;
-  --accent-foreground: #1D1D1D;
-  --destructive: #B85C5C;
-  --success: #4B7F52;
-  --warning: #C68A2D;
-  --radius: 0.75rem;
+  --background: #F7F8F4;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --border: #E5E7EB;
+  --primary: #0F8F5F;
+  --primary-foreground: #FFFFFF;
+  --muted: #F1F3EE;
+  --muted-foreground: #6B7280;
+  --accent: #E8F5EE;
+  --accent-foreground: #0C7A51;
+  --destructive: #DC2626;
+  --success: #0F8F5F;
+  --warning: #B45309;
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -68,20 +65,14 @@
   }
 }
 
-/* Custom Soft Utilities */
-.glass-panel {
-  background: rgba(252, 251, 248, 0.7);
-  backdrop-filter: blur(12px);
+.surface-card {
+  background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
 }
 
 .premium-shadow {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03), 0 10px 40px rgba(0, 0, 0, 0.03);
-}
-
-.subtle-ring {
-  box-shadow: 0 0 0 1px var(--border);
+  box-shadow: 0 8px 30px rgba(17, 24, 39, 0.06);
 }
 
 .hover-lift {
@@ -90,7 +81,7 @@
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 12px 24px rgba(17, 24, 39, 0.06), 0 4px 8px rgba(17, 24, 39, 0.03);
 }
 
 /* Scrollbar */

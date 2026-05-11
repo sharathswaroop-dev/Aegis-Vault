@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FARMER
+  WAREHOUSE
+  RETAILER
+  DISTRIBUTOR
+  ADMIN
+}
+
+enum InventoryCategory {
+  VEGETABLES
+  FRUITS
+  DAIRY
+  GRAINS
+  FROZEN
+  BEVERAGES
+  PACKAGED_FOODS
+}
+
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  region      String
+  users       User[]
+  warehouses  Warehouse[]
+  suppliers   Supplier[]
+  inventories InventoryItem[]
+  forecasts   Forecast[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model User {
+  id             String       @id @default(cuid())
+  name           String
+  email          String       @unique
+  role           Role         @default(ADMIN)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Warehouse {
+  id             String          @id @default(cuid())
+  name           String
+  city           String
+  capacityTons   Int
+  utilizationPct Float
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  inventories    InventoryItem[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Supplier {
+  id             String       @id @default(cuid())
+  name           String
+  category       String
+  reliabilityPct Float
+  leadTimeDays   Int
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model InventoryItem {
+  id             String            @id @default(cuid())
+  sku            String            @unique
+  name           String
+  category       InventoryCategory
+  quantity       Float
+  unit           String
+  freshnessDays  Float
+  spoilageRisk   Float
+  warehouseId    String
+  warehouse      Warehouse         @relation(fields: [warehouseId], references: [id])
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model Forecast {
+  id             String       @id @default(cuid())
+  region         String
+  category       String
+  demandIndex    Float
+  accuracyPct    Float
+  weatherSignal  String?
+  festivalSignal String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}

@@ -1,33 +1,62 @@
 "use client";
 
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Bot, CheckCircle2, Menu, Search } from "lucide-react";
+import { ROLE_OPTIONS } from "@/lib/constants";
+import { usePlatformStore } from "@/lib/store";
+import type { FoodFlowRole } from "@/lib/types";
 
 export function Header() {
+  const { role, setRole } = usePlatformStore();
+
   return (
-    <header className="h-20 w-full flex items-center justify-between px-6 md:px-10 sticky top-0 z-30 bg-[#F5F3EE]/80 backdrop-blur-md border-b border-transparent transition-all">
-      <div className="flex items-center gap-4">
-        <button className="md:hidden p-2 -ml-2 text-[#6B6B6B] hover:text-[#1D1D1D]">
-          <Menu size={20} />
+    <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-[#E5E7EB]/80 bg-[#F7F8F4]/90 px-4 backdrop-blur sm:px-6 lg:px-8">
+      <div className="flex min-w-0 items-center gap-4">
+        <button className="rounded-lg p-2 text-[#6B7280] hover:bg-white hover:text-[#111827] md:hidden">
+          <Menu className="size-5" />
         </button>
-        <h1 className="text-xl font-medium tracking-tight text-[#1D1D1D]">
-          Welcome back, Sharath
-        </h1>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-[#6B7280]">Operations Control</p>
+          <h1 className="truncate text-lg font-semibold tracking-tight text-[#111827]">
+            FoodFlow AI Platform
+          </h1>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B6B]" />
-          <input 
-            type="text" 
-            placeholder="Search vault, documents..." 
-            className="w-64 pl-9 pr-4 py-2 bg-[#FCFBF8] border border-[#E7E5E0] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#2E5E4E]/20 transition-all placeholder:text-[#6B6B6B]"
+      <div className="flex items-center gap-3">
+        <div className="relative hidden lg:block">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B7280]" />
+          <input
+            type="search"
+            placeholder="Search inventory, routes, suppliers..."
+            className="h-10 w-80 rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[#0F8F5F] focus:ring-3 focus:ring-[#0F8F5F]/10"
           />
         </div>
-        
-        <button className="relative p-2 rounded-full text-[#6B6B6B] hover:bg-[#E7E5E0] transition-colors">
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#B85C5C] ring-2 ring-[#F5F3EE]" />
+
+        <div className="hidden items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm font-medium text-[#111827] sm:flex">
+          <Bot className="size-4 text-[#0F8F5F]" />
+          <span>AI online</span>
+          <CheckCircle2 className="size-4 text-[#0F8F5F]" />
+        </div>
+
+        <select
+          value={role}
+          onChange={(event) => setRole(event.target.value as FoodFlowRole)}
+          className="hidden h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:border-[#0F8F5F] sm:block"
+          aria-label="Current role"
+        >
+          {ROLE_OPTIONS.map((option) => (
+            <option key={option}>{option}</option>
+          ))}
+        </select>
+
+        <button className="relative rounded-lg border border-[#E5E7EB] bg-white p-2 text-[#6B7280] transition hover:text-[#111827]">
+          <Bell className="size-5" />
+          <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-[#0F8F5F]" />
         </button>
+
+        <div className="flex size-10 items-center justify-center rounded-full bg-[#111827] text-sm font-semibold text-white">
+          NF
+        </div>
       </div>
     </header>
   );

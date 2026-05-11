@@ -10,14 +10,11 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="flex min-h-screen w-full bg-[#F5F3EE] text-[#1D1D1D] font-sans selection:bg-[#C6A969] selection:text-white">
-      {/* Sidebar - fixed left */}
+    <div className="flex min-h-screen w-full bg-[#F7F8F4] text-[#111827] font-sans selection:bg-[#0F8F5F] selection:text-white">
       <Sidebar />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 md:pl-64 transition-all duration-300">
+      <div className="flex min-w-0 flex-1 flex-col md:pl-72">
         <Header />
-        <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+        <main className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col px-4 py-5 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>
