@@ -15,7 +15,7 @@ import type { FamilyMember, AccessLevel } from "@/lib/familyRegistry";
 
 // ─── Micro-Components ────────────────────────────────────────────────────────────
 
-function StatusBadge({ label, status, color }: any) {
+function StatusBadge({ label, status }: { label: string; status: string }) {
   const isPending = status === "pending";
   return (
     <div className={`p-3 rounded-xl border ${isPending ? "border-[#C6A969]/30 bg-[#C6A969]/5" : "border-[#E7E5E0] bg-[#FCFBF8]"} text-center flex flex-col items-center justify-center gap-1.5 hover:shadow-sm transition-shadow`}>
@@ -25,7 +25,7 @@ function StatusBadge({ label, status, color }: any) {
   );
 }
 
-function Toggle({ active, warning, dark, onChange }: any) {
+function Toggle({ active, warning, dark, onChange }: { active: boolean; warning?: boolean; dark?: boolean; onChange?: () => void }) {
   let bgColor = "#E7E5E0";
   if (dark && !active) bgColor = "rgba(255,255,255,0.2)";
   if (active && warning) bgColor = "#B85C5C";
@@ -47,7 +47,7 @@ function Toggle({ active, warning, dark, onChange }: any) {
   );
 }
 
-function ApprovalRequirement({ title, desc, fulfilled }: any) {
+function ApprovalRequirement({ title, desc, fulfilled }: { title: string; desc: string; fulfilled: boolean }) {
   return (
     <div className="flex items-center justify-between p-3 rounded-xl border border-[#E7E5E0] bg-[#FCFBF8]">
       <div className="flex items-center gap-3">
@@ -66,7 +66,15 @@ function ApprovalRequirement({ title, desc, fulfilled }: any) {
   );
 }
 
-function AuditItem({ time, user, action, icon, warning, device, location }: any) {
+function AuditItem({ time, user, action, icon, warning, device, location }: { 
+  time: string; 
+  user: string; 
+  action: string; 
+  icon: React.ReactNode; 
+  warning?: boolean; 
+  device?: string; 
+  location?: string 
+}) {
   return (
     <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-[#F5F3EE] transition-all group border border-transparent hover:border-[#E7E5E0]">
       <div className={`mt-1 p-2 rounded-xl border
@@ -90,7 +98,7 @@ function AuditItem({ time, user, action, icon, warning, device, location }: any)
   );
 }
 
-function IntelligenceCard({ title, value, status, trend }: any) {
+function IntelligenceCard({ title, value, status, trend }: { title: string; value: string; status: string; trend?: string }) {
   return (
     <div className="glass-panel p-5 rounded-3xl bg-white border border-[#E7E5E0] space-y-3">
       <div className="flex justify-between items-center">
@@ -549,7 +557,7 @@ export default function InstitutionalSecurityPage() {
 
 // ─── Governance Micro-Components ─────────────────────────────────────────────
 
-function DeviceStatus({ name, status, last, icon, warning, blocked }: any) {
+function DeviceStatus({ name, status, last, icon, warning, blocked }: { name: string; status: string; last: string; icon: React.ReactNode; warning?: boolean; blocked?: boolean }) {
   return (
     <div className="flex items-center justify-between p-3 rounded-2xl border border-[#E7E5E0] bg-[#F5F3EE]/50 hover:bg-[#F5F3EE] transition-all group">
       <div className="flex items-center gap-3">
@@ -570,7 +578,7 @@ function DeviceStatus({ name, status, last, icon, warning, blocked }: any) {
   );
 }
 
-function VerificationRow({ label, count, icon }: any) {
+function VerificationRow({ label, count, icon }: { label: string; count: number; icon: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between text-xs py-1 border-b border-[#E7E5E0]/60 last:border-0">
       <div className="flex items-center gap-2 text-[#6B6B6B]">
@@ -582,7 +590,12 @@ function VerificationRow({ label, count, icon }: any) {
   );
 }
 
-function PermissionRow({ label, icon, currentLevel, onChange }: any) {
+function PermissionRow({ label, icon, currentLevel, onChange }: {
+  label: string;
+  icon: React.ReactNode;
+  currentLevel: string;
+  onChange?: (level: string) => void;
+}) {
   const levels = ["Full Access", "View Only", "Timed", "Locked", "Sealed"];
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-[#F5F3EE]/50 border border-[#E7E5E0] group">
