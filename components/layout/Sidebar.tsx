@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Leaf } from "lucide-react";
-import { NAV_GROUPS } from "@/lib/constants";
+import { useRoleConfig } from "@/lib/config/roleConfig";
+import { useRoleStore } from "@/lib/stores/roleStore";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const roleConfig = useRoleConfig();
+  const companyName = useRoleStore((state) => state.companyName);
+  const [company, descriptor] = companyName.split(" / ");
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-[#E5E7EB] bg-white md:flex">
@@ -28,10 +32,10 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-6">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
+        {roleConfig.navItems.map((group) => (
+          <div key={group.section}>
             <div className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6B7280]">
-              {group.label}
+              {group.section}
             </div>
             <div className="space-y-1">
               {group.items.map((item) => {
@@ -42,7 +46,7 @@ export function Sidebar() {
 
                 return (
                   <Link
-                    key={item.name}
+                    key={`${group.section}-${item.label}`}
                     href={item.href}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
@@ -52,7 +56,7 @@ export function Sidebar() {
                     )}
                   >
                     <Icon className="size-4" />
-                    <span>{item.name}</span>
+                    <span>{item.label}</span>
                   </Link>
                 );
               })}
@@ -63,8 +67,8 @@ export function Sidebar() {
 
       <div className="border-t border-[#E5E7EB] p-4">
         <div className="rounded-lg border border-[#E5E7EB] bg-[#F7F8F4] p-3">
-          <div className="text-sm font-semibold text-[#111827]">Northstar Foods</div>
-          <div className="mt-1 text-xs text-[#6B7280]">Enterprise Operations</div>
+          <div className="text-sm font-semibold text-[#111827]">{company}</div>
+          <div className="mt-1 text-xs text-[#6B7280]">{descriptor}</div>
         </div>
       </div>
     </aside>

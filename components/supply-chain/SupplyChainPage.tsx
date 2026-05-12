@@ -1,9 +1,19 @@
+"use client";
+
 import { ReactNode } from "react";
 import { WarehouseOverview } from "@/components/supply-chain/WarehouseOverview";
 import { InlineAiInsights } from "@/components/forecasting/InlineAiInsights";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { MetricGrid } from "@/components/shared/MetricGrid";
-import { pageAiInsights } from "@/lib/mock-data";
+import { useRoleConfig } from "@/lib/config/roleConfig";
+import { useRoleStore } from "@/lib/stores/roleStore";
+
+interface WarehouseSummary {
+  name: string;
+  capacity: number;
+  spoilage: number;
+  orders: number;
+}
 
 interface SupplyChainPageProps {
   title: string;
@@ -11,17 +21,23 @@ interface SupplyChainPageProps {
   metrics: { label: string; value: string; detail: string; icon?: ReactNode }[];
   panelTitle: string;
   rows: { name: string; detail: string; metric: string; status: string }[];
+  warehouses?: WarehouseSummary[];
+  hideControlQueue?: boolean;
 }
 
-export function SupplyChainPage({ title, subtitle, metrics, panelTitle, rows }: SupplyChainPageProps) {
+export function SupplyChainPage({ title, subtitle, metrics, panelTitle, rows, warehouses, hideControlQueue = false }: SupplyChainPageProps) {
+  const role = useRoleStore((state) => state.currentRole);
+  const roleConfig = useRoleConfig();
+
   return (
     <div className="space-y-6 pb-8">
       <PageHeader title={title} subtitle={subtitle} />
-      <InlineAiInsights insights={pageAiInsights.dashboard} />
+      <InlineAiInsights insights={roleConfig.aiInsights.map((insight) => insight.message)} resetKey={role} />
       <MetricGrid items={metrics} />
       <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-        <WarehouseOverview />
-        <section className="surface-card rounded-lg p-5">
+        <WarehouseOverview warehouses={warehouses} />
+        {hideControlQueue ? null : (
+          <section className="surface-card rounded-lg p-5">
           <h3 className="text-base font-semibold text-[#111827]">{panelTitle}</h3>
           <div className="mt-4 divide-y divide-[#E5E7EB]">
             {rows.map((row) => (
@@ -38,6 +54,7 @@ export function SupplyChainPage({ title, subtitle, metrics, panelTitle, rows }: 
             ))}
           </div>
         </section>
+        )}
       </div>
     </div>
   );

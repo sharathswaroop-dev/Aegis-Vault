@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ShoppingCart } from "lucide-react";
-import { reorderQueue } from "@/lib/mock-data";
+import { useLiveDataStore } from "@/lib/stores/liveDataStore";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
@@ -12,11 +12,28 @@ interface ReorderQueueProps {
   isLoading?: boolean;
 }
 
-export function ReorderQueue({ isLoading = false }: ReorderQueueProps) {
+export function ReorderQueue({ isLoading: propLoading = false }: ReorderQueueProps) {
+  const { orders, loading: liveLoading } = useLiveDataStore();
   const [toast, setToast] = useState<string | null>(null);
+
+  const isLoading = propLoading || (liveLoading && orders.length === 0);
+
+  const queue = useMemo(() => {
+    return orders
+      .filter(o => parseFloat(o.stock) < 15) // Threshold for reorder
+      .map(o => ({
+        sku: o.sku,
+        currentStock: parseFloat(o.stock),
+        reorderPoint: 15,
+        suggestedQty: 50,
+        supplier: "Regional Hub",
+        leadTimeDays: 2
+      }));
+  }, [orders]);
+
   const sortedQueue = useMemo(
-    () => [...reorderQueue].sort((a, b) => Number(b.currentStock < b.reorderPoint) - Number(a.currentStock < a.reorderPoint)),
-    [],
+    () => [...queue].sort((a, b) => a.currentStock - b.currentStock),
+    [queue],
   );
 
   const createPo = (sku: string) => {

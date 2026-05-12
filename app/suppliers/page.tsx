@@ -1,25 +1,31 @@
-import { Clock, Handshake, ShieldCheck, Store } from "lucide-react";
+"use client";
+
+import { createElement } from "react";
 import { InlineAiInsights } from "@/components/forecasting/InlineAiInsights";
 import { MetricGrid } from "@/components/shared/MetricGrid";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupplierTable } from "@/components/supply-chain/SupplierTable";
-import { pageAiInsights } from "@/lib/mock-data";
+import { useRoleConfig } from "@/lib/config/roleConfig";
+import { useRoleStore } from "@/lib/stores/roleStore";
 
 export default function SuppliersPage() {
+  const role = useRoleStore((state) => state.currentRole);
+  const roleConfig = useRoleConfig();
+
   return (
     <div className="space-y-6 pb-8">
       <PageHeader
-        title="Suppliers"
-        subtitle="Supplier and retail analytics for delivery reliability, fill rate, quality variance, and supply-demand balancing."
+        title={roleConfig.suppliersTitle}
+        subtitle={roleConfig.suppliersSubtitle}
       />
-      <InlineAiInsights insights={pageAiInsights.suppliers} />
+      <InlineAiInsights insights={roleConfig.aiInsights.map((insight) => insight.message)} resetKey={role} />
       <MetricGrid
-        items={[
-          { label: "Active Suppliers", value: "286", detail: "Including retail partners", icon: <Handshake className="size-5" /> },
-          { label: "OTIF", value: "94.1%", detail: "On-time in-full", icon: <ShieldCheck className="size-5" /> },
-          { label: "Avg Lead Time", value: "2.8 days", detail: "Down 0.4 days", icon: <Clock className="size-5" /> },
-          { label: "Retail Accounts", value: "128", detail: "Merged as filter", icon: <Store className="size-5" /> },
-        ]}
+        items={roleConfig.suppliersKpis.map((kpi) => ({
+          label: kpi.label,
+          value: kpi.value,
+          detail: kpi.subtitle,
+          icon: createElement(kpi.icon, { className: "size-5" }),
+        }))}
       />
       <SupplierTable />
     </div>

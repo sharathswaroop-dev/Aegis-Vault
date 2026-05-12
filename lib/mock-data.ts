@@ -1,54 +1,26 @@
 import type {
   AccuracyLogRow,
   AnomalyAlert,
+  AnomalyAlertDetail,
   BatchExpiry,
   ExternalSignal,
+  FarmerBatch,
   ForecastPoint,
   ForecastTag,
-  FoodFlowRole,
   InventoryRow,
-  Kpi,
   MarkdownRule,
+  PendingPickup,
+  PriceForecastPoint,
+  PriceForecastTableRow,
   RegionalDemandPoint,
   RegionalStateDemand,
   ReorderQueueItem,
+  SearchResultItem,
   ShelfLifeRule,
   ShipmentRow,
+  SpoilageBatch,
   SupplierRow,
 } from "@/lib/types";
-
-export const kpisByRole: Record<FoodFlowRole, Kpi[]> = {
-  Admin: [
-    { label: "Total Inventory Stored", value: "18.4k tons", change: "+8.2% this month", tone: "good" },
-    { label: "Forecast Accuracy", value: "94.8%", change: "+2.4 pts", tone: "good" },
-    { label: "Spoilage Risk", value: "6.1%", change: "-1.8 pts", tone: "good" },
-    { label: "Active Warehouses", value: "42", change: "5 regions online", tone: "neutral" },
-  ],
-  Warehouse: [
-    { label: "Total Inventory Stored", value: "4.8k tons", change: "+5.1% inbound", tone: "good" },
-    { label: "Forecast Accuracy", value: "92.4%", change: "warehouse plan", tone: "good" },
-    { label: "Spoilage Risk", value: "7.4%", change: "12 pallets aging", tone: "warn" },
-    { label: "Active Warehouses", value: "8", change: "regional hubs", tone: "neutral" },
-  ],
-  Retailer: [
-    { label: "Total Inventory Stored", value: "2.1k tons", change: "store network", tone: "good" },
-    { label: "Forecast Accuracy", value: "91.7%", change: "weekend adjusted", tone: "good" },
-    { label: "Spoilage Risk", value: "8.2%", change: "produce heavy", tone: "warn" },
-    { label: "Active Warehouses", value: "14", change: "serving stores", tone: "neutral" },
-  ],
-  Distributor: [
-    { label: "Total Inventory Stored", value: "6.6k tons", change: "in transit", tone: "good" },
-    { label: "Forecast Accuracy", value: "93.2%", change: "+1.9 pts", tone: "good" },
-    { label: "Spoilage Risk", value: "8.5%", change: "rain impact", tone: "warn" },
-    { label: "Active Warehouses", value: "22", change: "connected hubs", tone: "neutral" },
-  ],
-  Farmer: [
-    { label: "Total Inventory Stored", value: "820 tons", change: "committed supply", tone: "neutral" },
-    { label: "Forecast Accuracy", value: "89.5%", change: "+4.1 pts", tone: "good" },
-    { label: "Spoilage Risk", value: "5.6%", change: "humidity watch", tone: "warn" },
-    { label: "Active Warehouses", value: "6", change: "buyer hubs", tone: "neutral" },
-  ],
-};
 
 export const demandForecast: ForecastPoint[] = [
   { week: "W1", p10: 650, p50: 700, p90: 742 },
@@ -68,12 +40,36 @@ export const regionalDemand: RegionalDemandPoint[] = [
 ];
 
 export const inventoryRows: InventoryRow[] = [
-  { sku: "TOM-BLR-01", item: "Tomatoes", category: "Vegetables", location: "Bangalore North", stock: "148 tons", age: "2.1 days", risk: "Medium", action: "Discount 10%" },
-  { sku: "MIL-MUM-04", item: "Whole Milk", category: "Dairy", location: "Mumbai Cold Hub", stock: "92 kl", age: "1.4 days", risk: "Low", action: "Hold price" },
-  { sku: "RIC-DEL-11", item: "Basmati Rice", category: "Grains", location: "Delhi Dry Storage", stock: "510 tons", age: "18 days", risk: "Low", action: "Rebalance" },
-  { sku: "MAN-HYD-09", item: "Mangoes", category: "Fruits", location: "Hyderabad East", stock: "76 tons", age: "3.8 days", risk: "High", action: "Priority dispatch" },
-  { sku: "PEA-CHN-02", item: "Frozen Peas", category: "Frozen", location: "Chennai Freezer 2", stock: "124 tons", age: "9 days", risk: "Low", action: "Bundle offer" },
-  { sku: "JUI-BLR-07", item: "Orange Juice", category: "Beverages", location: "Bangalore South", stock: "61 kl", age: "5 days", risk: "Medium", action: "Store push" },
+  { sku: "TOM-BLR-01", item: "Tomatoes", category: "Vegetables", location: "Bangalore North", stock: "148 tons", age: "2.1 days", risk: "Medium", action: "Discount 10%", demandPattern: "stable" },
+  { sku: "MIL-MUM-04", item: "Whole Milk", category: "Dairy", location: "Mumbai Cold Hub", stock: "92 kl", age: "1.4 days", risk: "Low", action: "Hold price", demandPattern: "stable" },
+  { sku: "RIC-DEL-11", item: "Basmati Rice", category: "Grains", location: "Delhi Dry Storage", stock: "510 tons", age: "18 days", risk: "Low", action: "Rebalance", demandPattern: "intermittent" },
+  { sku: "MAN-HYD-09", item: "Mangoes", category: "Fruits", location: "Hyderabad East", stock: "76 tons", age: "3.8 days", risk: "High", action: "Priority dispatch", demandPattern: "seasonal" },
+  { sku: "PEA-CHN-02", item: "Frozen Peas", category: "Frozen", location: "Chennai Freezer 2", stock: "124 tons", age: "9 days", risk: "Low", action: "Bundle offer", demandPattern: "stable" },
+  { sku: "JUI-BLR-07", item: "Orange Juice", category: "Beverages", location: "Bangalore South", stock: "61 kl", age: "5 days", risk: "Medium", action: "Store push", demandPattern: "seasonal" },
+];
+
+export const SKU_SEGMENTS: SKUSegment[] = [
+  { sku: 'Tomato', pattern: 'stable', model: 'Moving Average', confidence: 'high', historyWeeks: 52, variability: 'low' },
+  { sku: 'Mango', pattern: 'seasonal', model: 'Prophet', confidence: 'high', historyWeeks: 36, variability: 'medium' },
+  { sku: 'Specialty Cheese', pattern: 'intermittent', model: 'ARIMA', confidence: 'medium', historyWeeks: 18, variability: 'high' },
+  { sku: 'Exotic Fruits', pattern: 'long-tail', model: 'Heuristic Avg', confidence: 'low', historyWeeks: 8, variability: 'high' },
+  { sku: 'Potato', pattern: 'stable', model: 'Moving Average', confidence: 'high', historyWeeks: 48, variability: 'low' },
+  { sku: 'Sweets/Mithai', pattern: 'seasonal', model: 'Prophet', confidence: 'high', historyWeeks: 30, variability: 'medium' },
+  { sku: 'Imported Spices', pattern: 'intermittent', model: 'ARIMA', confidence: 'medium', historyWeeks: 14, variability: 'high' },
+];
+
+export const FORECAST_OVERRIDES: ForecastOverride[] = [
+  { sku: "Tomato", aiForecast: "480 tons", humanOverride: "620 tons", changedBy: "Warehouse Manager", reason: "Festival week", actualOutcome: "590 tons", accuracy: "AI was closer" },
+  { sku: "Mango", aiForecast: "200 tons", humanOverride: "150 tons", changedBy: "Retailer", reason: "Overstock last month", actualOutcome: "170 tons", accuracy: "Human was closer" },
+  { sku: "Onion", aiForecast: "310 tons", humanOverride: "310 tons", changedBy: "—", reason: "No override", actualOutcome: "298 tons", accuracy: "AI accurate" },
+  { sku: "Potato", aiForecast: "540 tons", humanOverride: "700 tons", changedBy: "Distributor", reason: "New retail partner added", actualOutcome: "680 tons", accuracy: "Human was closer" },
+  { sku: "Dairy", aiForecast: "190 tons", humanOverride: "160 tons", changedBy: "Warehouse Manager", reason: "Supplier delay expected", actualOutcome: "155 tons", accuracy: "Human was closer" },
+];
+
+export const FORECAST_ANNOTATIONS: ForecastAnnotation[] = [
+  { date: "May 14", note: "Diwali prep begins — expect 2x demand on sweets, dairy" },
+  { date: "May 20", note: "Monsoon arrival forecast — soup/warm food demand rises" },
+  { date: "May 25", note: "Competitor store closed nearby — capture additional retail demand" },
 ];
 
 export const categories = ["Vegetables", "Fruits", "Dairy", "Grains", "Frozen", "Beverages", "Packaged Foods"];
@@ -103,15 +99,6 @@ export const aiInsights = [
   "Heavy rainfall may increase soup and packaged grains demand in Delhi NCR.",
   "Cold storage load in Chennai can absorb 12% more frozen inventory this week.",
 ];
-
-export const pageAiInsights: Record<string, string[]> = {
-  dashboard: [aiInsights[0], aiInsights[1]],
-  inventory: [aiInsights[1], "SKU-level expiry velocity suggests prioritizing mango and tomato markdowns today."],
-  forecasting: [aiInsights[0], aiInsights[3]],
-  suppliers: ["Retail fill-rate variance is highest in Mumbai stores; review dairy allocation.", "Green Valley Farms remains the best tomato recovery supplier."],
-  distribution: ["Supplier fill-rate variance is now a stronger delivery risk than routing distance.", "Cold-chain shipments should receive priority receiving slots."],
-  analytics: ["Waste reduction is tied to earlier discount triggers on fruit batches.", "Event-tagged forecast windows show the strongest dairy variance."],
-};
 
 export const warehouseOverview = [
   { name: "Bangalore North", capacity: 86, spoilage: 5.2, orders: 1240 },
@@ -188,3 +175,141 @@ export const regionalStateDemand: RegionalStateDemand[] = [
   { state: "Delhi", demandIndex: 74, color: "#43B881" },
   { state: "West Bengal", demandIndex: 55, color: "#E8F5EE" },
 ];
+
+export const farmerBatches: FarmerBatch[] = [
+  { batchId: "TOM-BLR-01", crop: "Tomato", quantity: "3.2 tons", fieldLocation: "Field A, Bangalore", harvestDate: "12 May 2026", status: "Ready" },
+  { batchId: "MNG-HSR-02", crop: "Mango", quantity: "2.8 tons", fieldLocation: "Orchard B, Hassan", harvestDate: "11 May 2026", status: "Overdue pickup" },
+  { batchId: "ONI-MYS-03", crop: "Onion", quantity: "1.9 tons", fieldLocation: "Field C, Mysore", harvestDate: "13 May 2026", status: "Ready" },
+  { batchId: "POT-TUM-04", crop: "Potato", quantity: "2.1 tons", fieldLocation: "Field D, Tumkur", harvestDate: "14 May 2026", status: "Scheduled" },
+  { batchId: "GRN-BLR-05", crop: "Greens", quantity: "2.0 tons", fieldLocation: "Field E, Bangalore", harvestDate: "12 May 2026", status: "Ready" },
+];
+
+export const spoilageBatches: SpoilageBatch[] = [
+  { batchId: "MNG-HSR-02", crop: "Mango", quantity: "2.8 tons", daysUntilExpiry: 2, urgency: "CRITICAL", recommendedAction: "Request emergency pickup" },
+  { batchId: "TOM-BLR-01", crop: "Tomato", quantity: "3.2 tons", daysUntilExpiry: 4, urgency: "HIGH", recommendedAction: "Schedule priority pickup" },
+  { batchId: "GRN-BLR-05", crop: "Greens", quantity: "2.0 tons", daysUntilExpiry: 5, urgency: "MEDIUM", recommendedAction: "Standard pickup this week" },
+  { batchId: "ONI-MYS-03", crop: "Onion", quantity: "1.9 tons", daysUntilExpiry: 7, urgency: "LOW", recommendedAction: "No action needed yet" },
+];
+
+export const pendingPickups: PendingPickup[] = [
+  { batchId: "TOM-BLR-01", crop: "Tomato", quantity: "3.2 tons", pickupLocation: "Field A, Bangalore", scheduledDate: "13 May 2026", warehouse: "Bangalore North", status: "Confirmed" },
+  { batchId: "MNG-HSR-02", crop: "Mango", quantity: "2.8 tons", pickupLocation: "Orchard B, Hassan", scheduledDate: "12 May 2026", warehouse: "Bangalore North", status: "Urgent" },
+  { batchId: "GRN-BLR-05", crop: "Greens", quantity: "2.0 tons", pickupLocation: "Field E, Bangalore", scheduledDate: "14 May 2026", warehouse: "Mumbai Cold Hub", status: "Pending" },
+];
+
+export const priceForecastData: PriceForecastPoint[] = Array.from({ length: 30 }, (_, i) => {
+  const day = i + 1;
+  const tomatoBase = 2400;
+  const tomato = Math.round(tomatoBase + (day * 14));
+  const mangoBase = 3100;
+  const mango = Math.round(mangoBase - (day * 2.5));
+  const onionBase = 1200;
+  const onion = Math.round(onionBase + (day * 1));
+  return { day, tomato, mango, onion };
+});
+
+export const priceForecastTable: PriceForecastTableRow[] = [
+  { crop: "Tomato", currentPrice: "₹2,400", forecastPrice: "₹2,820", change: "↑14%", recommendation: "Harvest now and prioritize dispatch" },
+  { crop: "Mango", currentPrice: "₹3,100", forecastPrice: "₹2,850", change: "↓8%", recommendation: "Sell existing stock within 5 days" },
+  { crop: "Onion", currentPrice: "₹1,200", forecastPrice: "₹1,230", change: "↑2%", recommendation: "No urgency, standard schedule" },
+];
+
+export const aiInsight: string = "Tomato prices are rising due to festival demand in Bangalore. Best window to sell: next 8–12 days.";
+
+export const anomalyAlertDetails: Record<string, AnomalyAlertDetail> = {
+  demand_spike: {
+    fullDescription: "Tomato demand in Bangalore has exceeded our AI forecast by 14%. This surge is driven by upcoming festival season and reduced supply from neighboring regions. Historical patterns suggest this demand spike will continue for the next 8-12 days.",
+    affectedItems: ["TOM-BLR-01 (3.2 tons)", "TOM-HYD-03 (2.5 tons)", "TOM-MYS-02 (1.8 tons)", "Bangalore North Warehouse"],
+    recommendedActions: [
+      "Increase harvest allocation to Bangalore North",
+      "Notify distributors of priority dispatch",
+      "Consider pre-negotiating better rates for volume",
+      "Monitor inventory levels every 6 hours",
+    ],
+  },
+  cold_chain_break: {
+    fullDescription: "Temperature excursion detected in Cold Storage Unit 2 at Mumbai Cold Hub. Temperature exceeded 8°C threshold for 18 minutes before restoration. Product quality may be impacted for temperature-sensitive items.",
+    affectedItems: ["MIL-MUM-04 (Whole Milk)", "CHE-MUM-02 (Cheese)", "BUT-MUM-01 (Butter)", "Cold Storage Unit 2"],
+    recommendedActions: [
+      "Quarantine affected batches for quality inspection",
+      "Check temperature logger data for duration of breach",
+      "Notify quality assurance team immediately",
+      "Document incident for compliance reporting",
+    ],
+  },
+  supplier_delay: {
+    fullDescription: "Riverbend Dairy has notified a 5-hour delay for inbound shipment due to traffic congestion on Mumbai-Pune highway. The delay will impact cold chain schedule and may affect next-day delivery commitments to retailers.",
+    affectedItems: ["Mumbai Cold Hub", "Route 7 Distribution", "3 Retailer orders"],
+    recommendedActions: [
+      "Reroute via alternative highway (adds 20km but bypasses congestion)",
+      "Notify affected retailers of revised ETA",
+      "Adjust cold storage intake schedule",
+      "Consider emergency supplier backup for next shipment",
+    ],
+  },
+};
+
+export const searchInventory: SearchResultItem[] = [
+  { type: "inventory", name: "Tomatoes", subtitle: "TOM-BLR-01 — 148 tons", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Whole Milk", subtitle: "MIL-MUM-04 — 92 kl", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Basmati Rice", subtitle: "RIC-DEL-11 — 510 tons", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Mangoes", subtitle: "MAN-HYD-09 — 76 tons", icon: "box", href: "/inventory" },
+  { type: "warehouse", name: "Bangalore North", subtitle: "86% capacity, 1240 orders", icon: "warehouse", href: "/warehouses" },
+  { type: "warehouse", name: "Mumbai Cold Hub", subtitle: "79% capacity, 980 orders", icon: "warehouse", href: "/warehouses" },
+  { type: "warehouse", name: "Delhi Dry Storage", subtitle: "72% capacity, 1110 orders", icon: "warehouse", href: "/warehouses" },
+  { type: "warehouse", name: "Hyderabad East", subtitle: "91% capacity, 760 orders", icon: "warehouse", href: "/warehouses" },
+  { type: "batch", name: "TOM-BLR-01", subtitle: "Tomato — 3.2 tons — Ready", icon: "package", href: "/inventory" },
+  { type: "batch", name: "MNG-HSR-02", subtitle: "Mango — 2.8 tons — Overdue", icon: "package", href: "/inventory" },
+  { type: "batch", name: "ONI-MYS-03", subtitle: "Onion — 1.9 tons — Ready", icon: "package", href: "/inventory" },
+  { type: "shipment", name: "SHP-10042", subtitle: "Green Valley → Bangalore North", icon: "truck", href: "/distribution" },
+  { type: "shipment", name: "SHP-10043", subtitle: "Riverbend Dairy → Mumbai (Delayed)", icon: "truck", href: "/distribution" },
+  { type: "supplier", name: "Green Valley Farms", subtitle: "Vegetables, Karnataka", icon: "factory", href: "/suppliers" },
+  { type: "supplier", name: "Riverbend Dairy", subtitle: "Dairy, Maharashtra", icon: "factory", href: "/suppliers" },
+  { type: "retailer", name: "FreshMart Bangalore", subtitle: "Store #BLR-01", icon: "store", href: "/distribution" },
+  { type: "retailer", name: "DailyMart Mumbai", subtitle: "Store #MUM-03", icon: "store", href: "/distribution" },
+];
+
+export const farmerSearchData: SearchResultItem[] = [
+  { type: "inventory", name: "Tomatoes", subtitle: "TOM-BLR-01 — 3.2 tons", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Mangoes", subtitle: "MNG-HSR-02 — 2.8 tons", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Onions", subtitle: "ONI-MYS-03 — 1.9 tons", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Potatoes", subtitle: "POT-TUM-04 — 2.1 tons", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Greens", subtitle: "GRN-BLR-05 — 2.0 tons", icon: "box", href: "/inventory" },
+  { type: "warehouse", name: "Bangalore North", subtitle: "My linked warehouse", icon: "warehouse", href: "/warehouses" },
+  { type: "batch", name: "TOM-BLR-01", subtitle: "Tomato — 3.2 tons — Ready", icon: "package", href: "/inventory" },
+  { type: "batch", name: "MNG-HSR-02", subtitle: "Mango — 2.8 tons — Overdue", icon: "package", href: "/inventory" },
+];
+
+export const warehouseSearchData: SearchResultItem[] = searchInventory;
+
+export const distributorSearchData: SearchResultItem[] = [
+  { type: "shipment", name: "SHP-10042", subtitle: "Green Valley → Bangalore North", icon: "truck", href: "/distribution" },
+  { type: "shipment", name: "SHP-10043", subtitle: "Riverbend Dairy → Mumbai (Delayed)", icon: "truck", href: "/distribution" },
+  { type: "shipment", name: "SHP-10044", subtitle: "Sunfield Grains → Delhi (Delivered)", icon: "truck", href: "/distribution" },
+  { type: "shipment", name: "SHP-10045", subtitle: "Deccan Orchards → Hyderabad (Loading)", icon: "truck", href: "/distribution" },
+  { type: "warehouse", name: "Bangalore North", subtitle: "Route 1, Route 5", icon: "warehouse", href: "/warehouses" },
+  { type: "warehouse", name: "Mumbai Cold Hub", subtitle: "Route 2, Route 7", icon: "warehouse", href: "/warehouses" },
+  { type: "retailer", name: "FreshMart Bangalore", subtitle: "Store #BLR-01, 42 orders", icon: "store", href: "/distribution" },
+  { type: "retailer", name: "DailyMart Mumbai", subtitle: "Store #MUM-03, 38 orders", icon: "store", href: "/distribution" },
+  { type: "retailer", name: "SuperMart Chennai", subtitle: "Store #CHN-02, 28 orders", icon: "store", href: "/distribution" },
+];
+
+export const retailerSearchData: SearchResultItem[] = [
+  { type: "inventory", name: "Tomatoes", subtitle: "42 units in stock", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Onions", subtitle: "18 units (Low Stock)", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Potatoes", subtitle: "65 units in stock", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Milk", subtitle: "28 units in stock", icon: "box", href: "/inventory" },
+  { type: "inventory", name: "Mangoes", subtitle: "Out of Stock", icon: "box", href: "/inventory" },
+  { type: "order", name: "Order #ORD-001", subtitle: "Expected Tomorrow 9am", icon: "shopping-cart", href: "/distribution" },
+  { type: "order", name: "Order #ORD-002", subtitle: "Scheduled for 15 May", icon: "shopping-cart", href: "/distribution" },
+];
+
+export const adminSearchData: SearchResultItem[] = searchInventory;
+
+export const roleAccuracy: Record<string, number> = {
+  farmer: 89.2,
+  warehouse: 92.5,
+  distributor: 88.7,
+  retailer: 91.0,
+  admin: 91.4,
+};

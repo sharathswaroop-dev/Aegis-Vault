@@ -7,10 +7,15 @@ import { EmptyState } from "@/components/shared/EmptyState";
 interface InlineAiInsightsProps {
   insights: string[];
   compact?: boolean;
+  resetKey?: string;
 }
 
-export function InlineAiInsights({ insights, compact = false }: InlineAiInsightsProps) {
-  const [dismissed, setDismissed] = useState<string[]>([]);
+export function InlineAiInsights({ insights, compact = false, resetKey }: InlineAiInsightsProps) {
+  const [state, setState] = useState<{ resetKey?: string; dismissed: string[] }>({
+    resetKey,
+    dismissed: [],
+  });
+  const dismissed = state.resetKey === resetKey ? state.dismissed : [];
   const visibleInsights = insights.filter((insight) => !dismissed.includes(insight));
 
   if (visibleInsights.length === 0) {
@@ -35,7 +40,12 @@ export function InlineAiInsights({ insights, compact = false }: InlineAiInsights
           <p className="min-w-0 flex-1 text-sm leading-6 text-[#111827]">{insight}</p>
           <button
             className="rounded-md p-1 text-[#6B7280] transition hover:bg-[#F1F3EE] hover:text-[#111827]"
-            onClick={() => setDismissed((current) => [...current, insight])}
+            onClick={() =>
+              setState((current) => ({
+                resetKey,
+                dismissed: current.resetKey === resetKey ? [...current.dismissed, insight] : [insight],
+              }))
+            }
             aria-label="Dismiss AI suggestion"
           >
             <X className="size-4" />

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ToastProvider } from "@/components/ui/toast";
+import { LiveDataProvider } from "@/components/providers/LiveDataProvider";
 
 export const metadata: Metadata = {
   title: "FoodFlow AI - Inventory Intelligence Platform",
@@ -29,7 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col overflow-x-hidden bg-[#F7F8F4]">
-        <MainLayout>{children}</MainLayout>
+        <LiveDataProvider>
+          <ToastProvider>
+            <MainLayout>{children}</MainLayout>
+          </ToastProvider>
+        </LiveDataProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { DrillDownSheet } from "@/components/shared/DrillDownSheet";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -18,6 +19,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
       </div>
+      <DrillDownSheet />
     </div>
   );
 }
+

@@ -10,9 +10,10 @@ interface KpiCardProps {
   change: string;
   tone: "good" | "warn" | "neutral";
   index?: number;
+  onClick?: () => void;
 }
 
-export function KpiCard({ label, value, change, tone, index = 0 }: KpiCardProps) {
+export function KpiCard({ label, value, change, tone, index = 0, onClick }: KpiCardProps) {
   const Icon = tone === "good" ? ArrowUpRight : tone === "warn" ? ArrowDownRight : Minus;
 
   return (
@@ -20,7 +21,11 @@ export function KpiCard({ label, value, change, tone, index = 0 }: KpiCardProps)
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.04 }}
-      className="surface-card hover-lift rounded-lg p-4"
+      className={cn(
+        "surface-card hover-lift rounded-lg p-4",
+        onClick && "cursor-pointer"
+      )}
+      onClick={onClick}
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-[#6B7280]">{label}</p>
