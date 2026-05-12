@@ -6,7 +6,9 @@ import { Bell, Bot, CheckCircle2, Menu, Search, Package, Warehouse, Truck, Facto
 import { ROLE_CONFIG, ROLE_SELECT_OPTIONS } from "@/lib/config/roleConfig";
 import { useRoleStore, type Role } from "@/lib/stores/roleStore";
 import { useLiveDataStore } from "@/lib/stores/liveDataStore";
+import { useDrillDownStore } from "@/lib/stores/drillDownStore";
 import { Popover, PopoverTrigger, PopoverContentFixed } from "@/components/ui/popover";
+
 import { cn } from "@/lib/utils";
 import type { SearchResultItem } from "@/lib/types";
 
@@ -92,6 +94,8 @@ export function Header() {
   const router = useRouter();
   const { currentRole, setRole, userInitials } = useRoleStore();
   const { weather, alerts, lastUpdated } = useLiveDataStore();
+  const openDrillDown = useDrillDownStore((s) => s.open);
+
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -173,7 +177,10 @@ export function Header() {
           </h1>
         </div>
         {weather && (
-          <div className="hidden items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#6B7280] lg:flex">
+          <div 
+            className="hidden items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#6B7280] lg:flex cursor-pointer hover:border-[#0F8F5F] transition-colors"
+            onClick={() => openDrillDown("metric", { label: "Local Weather", value: `${weather.temperature}°C`, subtitle: `${weather.city}, ${weather.country}`, title: "Weather Analytics" })}
+          >
             <span>{weatherCodeIcon(weather.weathercode)}</span>
             <span className="font-semibold text-[#111827]">{weather.temperature}°C</span>
             <span className="text-xs">{weather.city}</span>
@@ -182,6 +189,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
+
         <div className="relative hidden lg:block" ref={searchContainerRef}>
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B7280]" />
           <input
@@ -304,7 +312,14 @@ export function Header() {
               </div>
               <div className="space-y-2">
                 {(alerts.length > 0 ? alerts : ROLE_CONFIG[currentRole].notifications).map((n: any, i: number) => (
-                  <div key={i} className="rounded-lg bg-[#F7F8F4] p-3">
+                  <div 
+                    key={i} 
+                    className="rounded-lg bg-[#F7F8F4] p-3 cursor-pointer hover:bg-[#F1F3EE] transition-colors border border-transparent hover:border-[#0F8F5F]/20"
+                    onClick={() => {
+                      openDrillDown("metric", { ...n, title: n.title || "Notification Detail" });
+                      setNotificationsOpen(false);
+                    }}
+                  >
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-[#111827]">{n.title}</p>
                       <span className="text-xs text-[#6B7280]">{n.timestamp || n.time || "Live"}</span>
@@ -313,6 +328,7 @@ export function Header() {
                   </div>
                 ))}
               </div>
+
             </div>
           ) : null}
         </div>

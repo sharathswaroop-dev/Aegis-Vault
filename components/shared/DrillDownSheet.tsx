@@ -1,13 +1,16 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useDrillDownStore } from "@/lib/stores/drillDownStore";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Package, Truck, MapPin, Clock, AlertTriangle, 
-  CheckCircle2, Thermometer, Users, Settings, History 
+  CheckCircle2, Thermometer, Users, Settings, History, Cpu
 } from "lucide-react";
+
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 
@@ -129,12 +132,65 @@ function ShipmentDetail({ data }: { data: any }) {
   );
 }
 
+interface HubMetrics {
+  hubId: string;
+  status: "healthy" | "degraded" | "critical";
+  latencyMs: number;
+  uptimePct: number;
+  cpuPct: number;
+  memPct: number;
+  activeSessions: number;
+  connectedDevices: number;
+  downloadMbps: number;
+  uploadMbps: number;
+  throughputMbps: number;
+  packetLossPct: number;
+  errorsPerMin: number;
+  location: string;
+  isp: string;
+  org: string;
+  lastSeen: string;
+}
+
 function HubDetail({ data }: { data: any }) {
+  const [metrics, setMetrics] = useState<HubMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const hubId = data?.hubId || "HUB-BANGALORE-NORTH";
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/live/hub/${hubId}`, { cache: "no-store" });
+        const json = await res.json();
+        if (json.success) setMetrics(json.data);
+      } catch (err) {
+        console.error("Hub metrics fetch failed", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 10000);
+    return () => clearInterval(interval);
+  }, [data?.hubId]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       <div className="surface-card p-5 rounded-lg bg-[#2E5E4E] text-white">
-        <h4 className="text-sm font-medium text-white/70 uppercase">Total Capacity</h4>
-        <p className="text-3xl font-bold mt-1">{data?.capacity || 5000} Tons</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h4 className="text-sm font-medium text-white/70 uppercase">Total Capacity</h4>
+            <p className="text-3xl font-bold mt-1">{data?.capacity || 5000} Tons</p>
+          </div>
+          {metrics && (
+            <Badge className={cn(
+              "bg-white/10 text-white border-white/20",
+              metrics.status === "healthy" ? "text-green-300" : "text-amber-300"
+            )}>
+              {metrics.status.toUpperCase()}
+            </Badge>
+          )}
+        </div>
         <div className="mt-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span>Utilization</span>
@@ -146,26 +202,66 @@ function HubDetail({ data }: { data: any }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 text-center">
+      <div className="grid grid-cols-2 gap-4">
         <div className="surface-card p-4 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Staff</p>
-          <p className="text-lg font-bold">{data?.staff || 42}</p>
+          <p className="text-xs text-[#6B7280] uppercase font-bold">Network Latency</p>
+          <p className="text-xl font-bold text-[#111827]">{metrics?.latencyMs || "—"} <span className="text-xs font-normal">ms</span></p>
         </div>
         <div className="surface-card p-4 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Dock Doors</p>
-          <p className="text-lg font-bold">12</p>
-        </div>
-        <div className="surface-card p-4 rounded-lg">
-          <p className="text-xs text-[#6B7280]">Forklifts</p>
-          <p className="text-lg font-bold">8</p>
+          <p className="text-xs text-[#6B7280] uppercase font-bold">Uptime</p>
+          <p className="text-xl font-bold text-[#111827]">{metrics?.uptimePct || "99.9"}<span className="text-xs font-normal">%</span></p>
         </div>
       </div>
 
       <div className="surface-card p-5 rounded-lg space-y-4">
-        <h4 className="font-bold text-[#111827]">Stored Products</h4>
+        <h4 className="font-bold text-[#111827] flex items-center gap-2">
+          <Cpu className="size-4 text-[#0F8F5F]" /> Infrastructure Health
+        </h4>
+        <div className="grid grid-cols-2 gap-y-4 text-sm">
+          <div>
+            <p className="text-[#6B7280]">CPU Load</p>
+            <p className="font-semibold">{metrics?.cpuPct || 0}%</p>
+          </div>
+          <div>
+            <p className="text-[#6B7280]">Memory Usage</p>
+            <p className="font-semibold">{metrics?.memPct || 0}%</p>
+          </div>
+          <div>
+            <p className="text-[#6B7280]">Bandwidth (In)</p>
+            <p className="font-semibold">{metrics?.downloadMbps || 0} Mbps</p>
+          </div>
+          <div>
+            <p className="text-[#6B7280]">Bandwidth (Out)</p>
+            <p className="font-semibold">{metrics?.uploadMbps || 0} Mbps</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="surface-card p-5 rounded-lg space-y-4">
+        <h4 className="font-bold text-[#111827] flex items-center gap-2">
+          <Users className="size-4 text-[#0F8F5F]" /> Facility Status
+        </h4>
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="p-3 bg-[#F7F8F4] rounded-lg">
+            <p className="text-[10px] text-[#6B7280] uppercase font-bold">Staff</p>
+            <p className="text-lg font-bold">{data?.staff || 42}</p>
+          </div>
+          <div className="p-3 bg-[#F7F8F4] rounded-lg">
+            <p className="text-[10px] text-[#6B7280] uppercase font-bold">Docks</p>
+            <p className="text-lg font-bold">12</p>
+          </div>
+          <div className="p-3 bg-[#F7F8F4] rounded-lg">
+            <p className="text-[10px] text-[#6B7280] uppercase font-bold">Maint.</p>
+            <p className="text-lg font-bold text-[#0F8F5F]">DONE</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="surface-card p-5 rounded-lg space-y-4">
+        <h4 className="font-bold text-[#111827]">Stored Inventory</h4>
         <div className="space-y-3">
           {["Tomatoes", "Onions", "Potato"].map((item) => (
-            <div key={item} className="flex items-center justify-between p-3 bg-[#F7F8F4] rounded-md">
+            <div key={item} className="flex items-center justify-between p-3 bg-[#F7F8F4] rounded-md border border-[#E5E7EB]">
               <div>
                 <p className="font-bold text-sm">{item}</p>
                 <p className="text-xs text-[#6B7280]">Batch: FF-{Math.floor(Math.random() * 10000)}</p>
@@ -181,6 +277,7 @@ function HubDetail({ data }: { data: any }) {
     </div>
   );
 }
+
 
 function DeliveriesList({ data }: { data: any }) {
   return (

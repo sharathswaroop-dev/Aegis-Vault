@@ -2,15 +2,17 @@
 
 import { useMemo } from "react";
 import { PackageCheck, Truck } from "lucide-react";
-import { useLiveDataStore } from "@/lib/stores/liveDataStore";
+import { useLiveDataStore, type LiveShipment } from "@/lib/stores/liveDataStore";
+import { useDrillDownStore } from "@/lib/stores/drillDownStore";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { cn } from "@/lib/utils";
 
 function statusClass(status: string) {
-  if (status === "In Transit") return "bg-blue-50 text-blue-700";
-  if (status === "Delayed") return "bg-amber-50 text-amber-700";
-  if (status === "Delivered") return "bg-[#E8F5EE] text-[#0C7A51]";
+  const s = status.toLowerCase();
+  if (s === "in-transit" || s === "dispatched") return "bg-blue-50 text-blue-700";
+  if (s === "delayed") return "bg-amber-50 text-amber-700";
+  if (s === "delivered") return "bg-[#E8F5EE] text-[#0C7A51]";
   return "bg-[#F1F3EE] text-[#111827]";
 }
 
@@ -19,21 +21,23 @@ interface DistributionStatusProps {
 }
 
 export function DistributionStatus({ isLoading: propLoading = false }: DistributionStatusProps) {
-  const { orders, loading: liveLoading } = useLiveDataStore();
+  const { shipments: liveShipments, loading: liveLoading } = useLiveDataStore();
+  const openDrillDown = useDrillDownStore((s) => s.open);
   
-  const isLoading = propLoading || (liveLoading && orders.length === 0);
+  const isLoading = propLoading || (liveLoading && liveShipments.length === 0);
 
-  const shipments = useMemo(() => {
-    return orders.map((o, i) => ({
-      shipmentId: `SHP-${o.sku.split('-')[1] || i}`,
-      supplier: o.location.split(' ')[0] + " Supplier",
-      destination: "Regional Hub",
-      sku: o.sku,
-      status: i % 3 === 0 ? "In Transit" : i % 5 === 0 ? "Delayed" : "In Transit",
-      fillRate: 90 + (i % 10),
-      eta: "Today, " + (10 + i) + ":00"
-    }));
-  }, [orders]);
+  // Fallback to lots-based mock if no real shipments in DB yet
+  const { orders } = useLiveDataStore();
+  const shipments = liveShipments.length > 0 ? liveShipments : orders.map((o, i) => ({
+    shipmentId: `SHP-${o.sku.split('-')[1] || i}`,
+    supplier: o.location.split(' ')[0] + " Supplier",
+    destination: "Regional Hub",
+    sku: o.sku,
+    status: (i % 3 === 0 ? "in-transit" : i % 5 === 0 ? "delayed" : "dispatched") as any,
+    tons: parseFloat(o.stock),
+    eta: "Today, " + (10 + i) + ":00",
+    id: o.id
+  }));
 
   return (
     <section className="surface-card rounded-lg p-5">
@@ -65,28 +69,30 @@ export function DistributionStatus({ isLoading: propLoading = false }: Distribut
             <thead className="bg-[#F7F8F4] text-xs uppercase tracking-wide text-[#6B7280]">
               <tr>
                 <th className="px-4 py-3 font-semibold">Shipment</th>
-                <th className="px-4 py-3 font-semibold">Supplier</th>
+                <th className="px-4 py-3 font-semibold">Origin/Supplier</th>
                 <th className="px-4 py-3 font-semibold">Destination</th>
-                <th className="px-4 py-3 font-semibold">SKU</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Fill Rate</th>
+                <th className="px-4 py-3 font-semibold">Payload</th>
                 <th className="px-4 py-3 font-semibold">ETA</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E7EB]">
-              {shipments.map((row) => (
-                <tr key={row.shipmentId}>
+              {shipments.map((row: any) => (
+                <tr 
+                  key={row.shipmentId} 
+                  className="hover:bg-[#F7F8F4] cursor-pointer transition-colors"
+                  onClick={() => openDrillDown("shipment", { ...row, title: row.shipmentId })}
+                >
                   <td className="px-4 py-4 font-mono text-xs text-[#6B7280]">{row.shipmentId}</td>
-                  <td className="px-4 py-4 font-semibold text-[#111827]">{row.supplier}</td>
+                  <td className="px-4 py-4 font-semibold text-[#111827]">{row.origin || row.supplier}</td>
                   <td className="px-4 py-4 text-[#6B7280]">{row.destination}</td>
-                  <td className="px-4 py-4 text-[#6B7280]">{row.sku}</td>
                   <td className="px-4 py-4">
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", statusClass(row.status))}>
-                      {row.status}
+                      {row.status.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-[#111827]">{row.fillRate}%</td>
-                  <td className="px-4 py-4 text-[#6B7280]">{row.eta}</td>
+                  <td className="px-4 py-4 text-[#111827] font-medium">{row.tons} Tons</td>
+                  <td className="px-4 py-4 text-[#6B7280] font-medium">{row.eta}</td>
                 </tr>
               ))}
             </tbody>
